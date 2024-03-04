@@ -1,4 +1,4 @@
 
-MODEL_FILE_PATH = r"artifacts\lin_reg_model.pkl"
+MODEL_FILE_PATH = "lin_reg_model.pkl"
 COLUMN_DATA_JSON = r"artifacts\column_data.json"
-PORT_NUMBER = 8080
+PORT_NUMBER = 8082
