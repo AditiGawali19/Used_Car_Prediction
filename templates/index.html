@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Used Car Selling Price Prediction</title>
+    <style>
+        body {
+            background-image: url(static/image/car_image.jpg);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #prediction-form {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #prediction-result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <form id="prediction-form">
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" required><br>
+
+        <label for="Present_Price">Present_Price:</label>
+        <input type="text" id="Present_Price" name="Present_Price" required><br>
+
+        <label for="Kms_Driven">Kms Driven:</label>
+        <input type="text" id="Kms_Driven" name="Kms_Driven"required><br>
+
+        <label for="Seller_Type">Seller Type:</label>
+        <select id="Seller_Type" name="Seller_Type"></select><br>         <!--this Seller_Type id is fetch from dropdown which is bellow-->
+
+        <label for="Transmission">Transmission:</label>
+        <select id="Transmission" name="Transmission"></select><br>
+
+        <label for="Fuel_Type">Fuel Type:</label>
+        <select id="Fuel_Type" name="Fuel_Type"></select><br>
+
+        <button type="button" onclick="predictCharges()">Predict Charges</button>
+    </form>
+
+    <div id="predictionResult"></div>
+
+    <script>
+        // Fetch dropdown options for categorical columns
+        fetch('/api/seller_type_options').then(response => response.json()).then(data => {
+            fillDropdown('Seller_Type', data);
+        });
+
+        fetch('/api/transmission_type_options').then(response => response.json()).then(data => {
+            fillDropdown('Transmission', data);
+        });
+
+        fetch('/api/fuel_type_options').then(response => response.json()).then(data => {
+            fillDropdown('Fuel_Type', data);
+        });
+
+        
+        // Function to fill dropdown options
+        function fillDropdown(id, options) {
+            var dropdown = document.getElementById(id);
+
+            options.forEach(option => {
+                var optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.text = option;
+                dropdown.add(optionElement);
+            });
+        }
+
+        // Function to predict selling price
+        function predictCharges() {
+            var formData = new FormData(document.getElementById('prediction-form'));
+
+            fetch('/api/selling_price_predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Year: document.getElementById('year').value,
+                    Present_Price: document.getElementById('Present_Price').value,
+                    Kms_Driven: document.getElementById('Kms_Driven').value,
+                    Seller_Type: document.getElementById('Seller_Type').value,
+                    Transmission: document.getElementById('Transmission').value,
+                    Fuel_Type: document.getElementById('Fuel_Type').value,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('predictionResult').innerHTML = `<p>Predicted Selling Price: ${data.predicted_selling_price}</p>`;
+            })
+			.catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
