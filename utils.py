@@ -1,15 +1,17 @@
 import pickle
 import json
 import numpy as np
+import config
 
 
 def predict_selling_price(Year, Present_Price, Kms_Driven, Seller_Type, Transmission, Fuel_Type):
 
     print('input received in frunction predict_selling_price ',Year, Present_Price, Kms_Driven, Seller_Type, Transmission, Fuel_Type)
-    drug_pickle_path = r"artifacts\lin_reg_model.pkl"
-    drug_json_path = r"artifacts\column_data.json"
+    model_file_path = config.MODEL_FILE_PATH
+    drug_json_path = config.COLUMN_DATA_JSON
+    
 
-    with open(drug_pickle_path, 'rb') as f:
+    with open(model_file_path, 'rb') as f:
         model = pickle.load(f)
     col_names = model.feature_names_in_
 
