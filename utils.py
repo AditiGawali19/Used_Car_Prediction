@@ -15,7 +15,7 @@ def predict_selling_price(Year, Present_Price, Kms_Driven, Seller_Type, Transmis
         model = pickle.load(f)
     col_names = model.feature_names_in_
 
-    with open(drug_json_path, 'r') as f:
+    with open(drug_json_path, 'rb') as f:
         col_data = json.load(f)
     
     Seller_Type = col_data['Seller_Type'][Seller_Type]
