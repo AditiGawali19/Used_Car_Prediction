@@ -2,11 +2,12 @@ from flask import Flask, render_template, request, jsonify
 import pandas as pd
 from utils import predict_selling_price
 import config
+import logging
 
 app = Flask(__name__)
 
 # Load the dataset to get dropdown options
-dataset = pd.read_csv(r'car data.csv')
+dataset = pd.read_csv('car_data.csv')
 
 # Homepage API
 @app.route('/')
@@ -28,29 +29,36 @@ def seller_api_options():
 def transmission_api_options():
     return jsonify(list(dataset['Transmission'].unique()))
 
-# Prediction API                                  # api for target column
-@app.route('/api/selling_price_predict', methods=['GET','POST'])
+# Prediction API
+@app.route('/api/selling_price_predict', methods=['POST'])
 def selling_api():
-    print("*"*40)
-    #Get data from UI in JSON format
-    data = request.get_json()
+    try:
+        # Get data from UI in JSON format
+        data = request.get_json()
+        logging.info('Data received from UI or postman: %s', data)
+        
+        # Input validation
+        required_keys = ['Year', 'Present_Price', 'Kms_Driven', 'Seller_Type', 'Transmission', 'Fuel_Type']
+        if not all(key in data for key in required_keys):
+            return jsonify({'error': 'Missing required keys in input data'}), 400
+        
+        # Convert data to appropriate types
+        Year = int(data['Year'])
+        Present_Price = float(data['Present_Price'])
+        Kms_Driven = int(data['Kms_Driven'])
+        Seller_Type = data['Seller_Type']
+        Transmission = data['Transmission']
+        Fuel_Type = data['Fuel_Type']
+
+        # Predict selling price of car
+        predicted_selling_price = predict_selling_price(Year, Present_Price, Kms_Driven, Seller_Type, Transmission, Fuel_Type)
+
+        return jsonify({'predicted_selling_price': predicted_selling_price}), 200
     
-    # Get all X (independent) variable from JSON varialbe i.e. data
-    Year = int(data['Year'])
-    Present_Price = float(data['Present_Price'])
-    Kms_Driven = int(data['Kms_Driven'])
-    Seller_Type = data['Seller_Type']
-    Transmission = data['Transmission']
-    Fuel_Type = data['Fuel_Type']
-    print('data received from UI or postman:', data)
-
-    # Predict selling price of car by calling below function in Utils.py
-    prd_selling_price = predict_selling_price(Year, Present_Price, Kms_Driven, Seller_Type, Transmission, Fuel_Type)
-
-   # prd_selling_price_str = str(predicted_selling_price) 
-
-    return jsonify({'predicted_selling_price': prd_selling_price})
-
+    except Exception as e:
+        logging.error('An error occurred during prediction: %s', str(e))
+        return jsonify({'error': 'An error occurred during prediction'}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=config.PORT_NUMBER,debug=False)
+    logging.basicConfig(level=logging.INFO)
+    app.run(host='0.0.0.0', port=config.PORT_NUMBER, debug=False)
