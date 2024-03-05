@@ -6,7 +6,7 @@ import config
 app = Flask(__name__)
 
 # Load the dataset to get dropdown options
-dataset = pd.read_csv(r'data\car data.csv')
+dataset = pd.read_csv(r'data/car data.csv')
 
 # Homepage API
 @app.route('/')
